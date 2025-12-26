@@ -8,7 +8,7 @@
             @if (auth()->user()->image == null)
                 <img class="img-avatar img-avatar-thumb" src="https://placehold.co/50" alt="">
             @else
-                <img class="img-avatar img-avatar-thumb" src="{{media(auth()->user()->image)}}" alt="">
+                <img class="img-avatar img-avatar-thumb" src="{{asset(auth()->user()->image)}}" alt="">
             @endif
           </div>
           <h1 class="h2 text-white mb-0">Edit Account</h1>
@@ -55,7 +55,7 @@
                     @if (auth()->user()->image == null)
                         <img class="img-avatar" id="image" src="https://placehold.co/50" alt="">
                     @else
-                        <img class="img-avatar" id="image" src="{{media(auth()->user()->image)}}" alt="">
+                        <img class="img-avatar" id="image" src="{{asset(auth()->user()->image)}}" alt="">
                     @endif
                   </div>
                   <div class="mb-4">

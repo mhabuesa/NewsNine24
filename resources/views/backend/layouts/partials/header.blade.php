@@ -14,7 +14,7 @@
                         <img class="rounded-circle" src="https://placehold.co/50" alt="Header Avatar"
                             style="width: 21px;">
                     @else
-                        <img class="rounded-circle" src="{{ media(Auth::user()->image) }}" alt="Header Avatar"
+                        <img class="rounded-circle" src="{{ asset(Auth::user()->image) }}" alt="Header Avatar"
                             style="width: 21px;">
                     @endif
                     <span class="d-none d-sm-inline-block ms-2">{{ Auth::user()->name }}</span>
@@ -27,7 +27,7 @@
                             <img class="img-avatar img-avatar48 img-avatar-thumb" src="https://placehold.co/50"
                                 alt="">
                         @else
-                            <img class="img-avatar img-avatar48 img-avatar-thumb" src="{{ media(Auth::user()->image) }}"
+                            <img class="img-avatar img-avatar48 img-avatar-thumb" src="{{ asset(Auth::user()->image) }}"
                                 alt="">
                         @endif
                         <p class="mt-2 mb-0 fw-medium">{{ Auth::user()->name }}</p>

@@ -8,7 +8,7 @@
 @endpush
 @section('content')
 
-    <div class="bg-image" style="min-height: 600px; background-image: url('{{ media($news->image) }}');"></div>
+    <div class="bg-image" style="min-height: 600px; background-image: url('{{ asset($news->image) }}');"></div>
     <div class="bg-body-extra-light">
         <div class="content content-boxed">
             <div class="text-center fs-sm push">

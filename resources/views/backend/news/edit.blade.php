@@ -48,7 +48,7 @@
                                         style="height: 307px; background: #f0f2f5; overflow: hidden;">
                                         @if ($news->image != null)
                                             <img id="imagePreview"
-                                                src="{{media($news->image) }}"
+                                                src="{{asset($news->image) }}"
                                                 class="img-fluid"
                                                 style="max-height: 100%; max-width: 100%; object-fit: contain; display: block;">
                                         @else
