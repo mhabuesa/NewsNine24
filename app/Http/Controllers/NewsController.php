@@ -54,7 +54,7 @@ class NewsController extends Controller
         if (News::where('slug', $slug)->exists()) {
             $slug = $slug . '-' . random_int(000, 999);
         }
-        $image_path = null;
+
         if($request->hasFile('image')) {
             $image_path = $this->saveImage('news', $request->file('image'), 900, 500);
         }
@@ -66,7 +66,7 @@ class NewsController extends Controller
             'slug' => $slug,
             'short_description' => $request->short_description,
             'description' => $request->description,
-            'image' => $image_path,
+            'image' => $image_path ?? null,
             'video_url' => $request->video_url,
             'status' => $request->status,
             'scheduled_at' => $request->scheduled_at,
@@ -139,18 +139,29 @@ class NewsController extends Controller
             $this->deleteImage($news->image);
             $image_path = $this->saveImage('news', $request->file('image'), 900, 500);
         }
+
         //Media Post
-        if($news->status != 'published' && $request->status == 'published'){
+        // if($news->status != 'published' && $request->status == 'published'){
 
-             $imageUrl = null;
+        //     $imageUrl = null;
 
-            if ($image_path) {
-                $imageUrl = asset($image_path);
-            }
+        //     if ($image_path) {
+        //         $imageUrl = asset($image_path);
+        //     }
 
-            if ($request->status === 'published') {
-                FacebookPostJob::dispatch($news, $request->title, $imageUrl);
-            }
+        //     if ($request->status === 'published') {
+        //         FacebookPostJob::dispatch($news, $request->title, $imageUrl);
+        //     }
+        // }
+        $imageUrl = null;
+
+        if ($image_path) {
+            $imageUrl = asset($image_path);
+        }
+
+        if ($request->status === 'published') {
+            FacebookPostDeleteJob::dispatch($news->fb_post_id);
+            FacebookPostJob::dispatch($news, $request->title, $imageUrl);
         }
 
         $news->update([
