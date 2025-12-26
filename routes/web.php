@@ -1,0 +1,58 @@
+<?php
+
+use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\HomeController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\NewsController;
+use App\Http\Controllers\PostController;
+use App\Http\Controllers\SubcategoryController;
+
+Route::get('/', function () {
+    return view('welcome');
+});
+
+
+Route::middleware('auth')->group(function () {
+    // Dashboard Route
+    Route::get('/dashboard', [HomeController::class, 'dashboard'])->name('dashboard');
+
+    // Profile Routes
+    Route::controller(ProfileController::class)->name('profile.')->prefix('profile')->group(function () {
+        Route::get('/', 'index')->name('index');
+        Route::post('/update', 'update')->name('update');
+        Route::post('/password', 'profile_password')->name('password');
+    });
+
+
+
+    // Category Routes
+    Route::controller(CategoryController::class)->name('category.')->prefix('category')->group(function () {
+        Route::get('/', 'index')->name('index');
+        Route::post('/store', 'store')->name('store');
+        Route::delete('/destroy/{id}', 'destroy')->name('destroy');
+        Route::post('/status/{id}', 'updateStatus')->name('status.update');
+        Route::post('/update', 'updateAjax')->name('update');
+    });
+        // Subcategory Routes
+        Route::controller(SubcategoryController::class)->name('subcategory.')->prefix('subcategory')->group(function () {
+            Route::get('/', 'index')->name('index');
+            Route::post('/store', 'store')->name('store');
+            Route::delete('/destroy/{id}', 'destroy')->name('destroy');
+            Route::post('/status/{id}', 'updateStatus')->name('status.update');
+            Route::post('/update', 'updateAjax')->name('update');
+        });
+        // Extra Routes of resource controllers can be defined here
+        // News Routes
+        Route::controller(NewsController::class)->name('news.')->prefix('news')->group(function () {
+            Route::get('/get-subcategories/{category}', 'getSubcategories');
+
+        });
+
+    // Resource Routes
+    Route::resources([
+        'news' => NewsController::class,
+    ]);
+});
+
+require __DIR__ . '/auth.php';

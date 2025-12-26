@@ -1,0 +1,31 @@
+.welcome_container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 40px;
+    background-color: #232E3E;
+    color: rgb(252, 252, 252);
+    font-size: 16px;
+    font-family: sans-serif;
+    width: 100% !important;
+}
+
+.semi_rounded_pill {
+    border-radius: 5px !important;
+}
+.border_redius_none {
+    border-radius: 0px !important;
+}
+
+.disabled_message {
+    font-size: 15px;
+}
+@media (max-width: 768px) {
+    .disabled_message {
+        font-size: .25rem;
+    }
+    .disabled_message strong {
+        display: block;
+        font-size: .75rem;
+    }
+}

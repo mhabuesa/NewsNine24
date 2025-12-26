@@ -1,0 +1,183 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use Carbon\Carbon;
+use App\Models\News;
+use App\Models\Category;
+use App\Models\Subcategory;
+use Illuminate\Support\Str;
+use Illuminate\Http\Request;
+use App\Jobs\FacebookPostJob;
+use App\Models\NewsMeta;
+use App\Traits\ImageSaveTrait;
+use Illuminate\Support\Facades\App;
+
+class NewsController extends Controller
+{
+    // use Image Process Trait;
+    use ImageSaveTrait;
+    /**
+     * Display a listing of the resource.
+     */
+    public function index()
+    {
+        $newses = News::latest()->get();
+        return  view('backend.news.index', compact('newses'));
+    }
+
+    /**
+     * Show the form for creating a new resource.
+     */
+    public function create()
+    {
+        $categories = Category::all();
+        return view('backend.news.create', compact('categories'));
+    }
+
+    /**
+     * Store a newly created resource in storage.
+     */
+    public function store(Request $request)
+    {
+        $request->validate([
+            'image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+            'title' => 'required',
+            'category' => 'required',
+            'short_description' => 'required',
+            'description' => 'required',
+        ]);
+
+        $slug = substr(Str::slug($request->title), 0, 40);
+
+        if (News::where('slug', $slug)->exists()) {
+            $slug = $slug . '-' . random_int(000, 999);
+        }
+        $image_path = null;
+        if($request->hasFile('image')) {
+            $image_path = $this->saveImage('news', $request->file('image'), 900, 500);
+        }
+
+        $news = News::create([
+            'title' => $request->title,
+            'category_id' => $request->category,
+            'subcategory_id' => $request->subcategory,
+            'slug' => $slug,
+            'short_description' => $request->short_description,
+            'description' => $request->description,
+            'image' => $image_path,
+            'video_url' => $request->video_url,
+            'status' => $request->status,
+            'scheduled_at' => $request->scheduled_at,
+        ]);
+
+        $imageUrl = env('APP_URL') . '/' . $image_path;
+
+        if($request->status == 'published'){
+            FacebookPostJob::dispatch($news, $request->title, $imageUrl);
+        }
+
+        if($request->meta_title != null){
+            NewsMeta::create([
+                'news_id' => $news->id,
+                'title' => $request->meta_title,
+                'description' => $request->meta_description,
+                'tags' => $request->tags,
+            ]);
+        }
+
+        return redirect()->route('news.index')->with('success', 'News created successfully.');
+    }
+
+    /**
+     * Display the specified resource.
+     */
+    public function show(string $id)
+    {
+        $news = News::find($id);
+        return view('backend.news.show', compact('news'));
+    }
+
+    /**
+     * Show the form for editing the specified resource.
+     */
+    public function edit(string $id)
+    {
+        $news = News::find($id);
+        $categories = Category::all();
+        $subcategories = Subcategory::where('category_id', $news->category_id)->get();
+        return  view('backend.news.edit', compact('news', 'categories', 'subcategories'));
+    }
+
+    /**
+     * Update the specified resource in storage.
+     */
+    public function update(Request $request, string $id)
+    {
+        $request->validate([
+            'image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+            'title' => 'required',
+            'category' => 'required',
+            'short_description' => 'required',
+            'description' => 'required',
+        ]);
+
+        $news = News::find($id);
+        $slug = substr(Str::slug($request->title), 0, 40);
+        if (News::where('slug', $slug)->exists()) {
+            $slug = $slug . '-' . random_int(000, 999);
+        }
+        $image_path = $news->image;
+        if($request->hasFile('image')) {
+            $this->deleteImage($news->image);
+            $image_path = $this->saveImage('news', $request->file('image'), 900, 500);
+        }
+        //Media Post
+        if($news->status != 'published' && $request->status == 'published'){
+            FacebookPostJob::dispatch($news, $request->title);
+        }
+
+        $news->update([
+            'title' => $request->title,
+            'category_id' => $request->category,
+            'subcategory_id' => $request->subcategory,
+            'slug' => $slug,
+            'short_description' => $request->short_description,
+            'description' => $request->description,
+            'image' => $image_path,
+            'video_url' => $request->video_url,
+            'status' => $request->status,
+            'scheduled_at' => $request->scheduled_at,
+        ]);
+
+
+
+        if($request->meta_title != null){
+            $news->meta()->update([
+                'title' => $request->meta_title,
+                'description' => $request->meta_description,
+                'tags' => $request->tags,
+            ]);
+        }
+
+        return redirect()->route('news.index')->with('success', 'News updated successfully.');
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     */
+    public function destroy(string $id)
+    {
+        //
+    }
+
+    // Subcategories of a category
+    public function getSubcategories($categoryId)
+    {
+        $subcategories = Subcategory::where('category_id', $categoryId)
+            ->orderBy('priority', 'asc')
+            ->get();
+
+        return response()->json($subcategories);
+    }
+}
