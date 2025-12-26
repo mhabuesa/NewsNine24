@@ -47,10 +47,6 @@ class CategoryController extends Controller
         $category = Category::findOrFail($id);
 
         try {
-
-            // Delete FB Post
-            FacebookPostDeleteJob::dispatch($category->fb_post_id);
-
             // Delete category
             $category->delete();
         } catch (\Exception $e) {

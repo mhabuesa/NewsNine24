@@ -66,7 +66,7 @@
                                                     <i class="fa fa-pencil text-secondary fa-xl"></i>
                                                 </a>
                                                 <button type="button" class="border-0 btn btn-sm"
-                                                    onclick="deleteCategory(this)" data-id="{{ $news->id }}"><i
+                                                    onclick="deletenews(this)" data-id="{{ $news->id }}"><i
                                                         class="fa fa-trash text-danger fa-xl"></i></button>
                                             </div>
                                         </td>
@@ -108,7 +108,7 @@
 
     <!-- Page specific script -->
     <script>
-        function deleteCategory(button) {
+        function deletenews(button) {
             const id = $(button).data('id');
             Swal.fire({
                 title: "Are you sure?",
@@ -120,7 +120,7 @@
                 confirmButtonText: "Yes, delete it!"
             }).then((result) => {
                 if (result.isConfirmed) {
-                    let url = "{{ route('category.destroy', ':id') }}";
+                    let url = "{{ route('news.destroy', ':id') }}";
                     url = url.replace(':id', id);
                     let token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
@@ -143,50 +143,6 @@
                             showToast("An error occurred: " + xhr.responseJSON.message, "error");
                         }
                     });
-                }
-            });
-        }
-
-        function updateCategoryStatus(element) {
-            Swal.fire({
-                title: "Are you sure?",
-                text: "Will update category status",
-                icon: "warning",
-                showCancelButton: true,
-                confirmButtonColor: "#3085d6",
-                cancelButtonColor: "#d33",
-                confirmButtonText: "Yes, update it!"
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    updateCategoryStatusAjax(element);
-                } else {
-                    element.checked = !element.checked;
-                }
-            })
-        }
-
-        function updateCategoryStatusAjax(element) {
-            const id = $(element).data('id');
-            let url = "{{ route('category.status.update', ':id') }}";
-            url = url.replace(':id', id);
-
-            $.ajax({
-                url: url,
-                type: 'POST',
-                dataType: 'json',
-                headers: {
-                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-                },
-                success: function(data) {
-                    if (data.success) {
-                        showToast(data.message, "success");
-                    } else {
-                        showToast(data.message, "error");
-                    }
-                },
-                error: function(xhr, status, error) {
-                    console.log('xhr.responseText, status, error', xhr.responseText, status, error);
-                    showToast('Something went wrong', "error");
                 }
             });
         }

@@ -5,12 +5,14 @@ namespace App\Http\Controllers;
 use Carbon\Carbon;
 use App\Models\News;
 use App\Models\Category;
+use App\Models\NewsMeta;
 use App\Models\Subcategory;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use App\Jobs\FacebookPostJob;
-use App\Models\NewsMeta;
 use App\Traits\ImageSaveTrait;
+use App\Jobs\FacebookPostDeleteJob;
+use Illuminate\Support\Facades\Log;
 
 class NewsController extends Controller
 {
@@ -139,7 +141,16 @@ class NewsController extends Controller
         }
         //Media Post
         if($news->status != 'published' && $request->status == 'published'){
-            FacebookPostJob::dispatch($news, $request->title);
+
+             $imageUrl = null;
+
+            if ($image_path) {
+                $imageUrl = asset($image_path);
+            }
+
+            if ($request->status === 'published') {
+                FacebookPostJob::dispatch($news, $request->title, $imageUrl);
+            }
         }
 
         $news->update([
@@ -173,7 +184,22 @@ class NewsController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+
+        $news = News::findOrFail($id);
+
+        try {
+
+            // Delete FB Post
+            FacebookPostDeleteJob::dispatch($news->fb_post_id);
+
+            // Delete category
+            $news->delete();
+        } catch (\Exception $e) {
+            Log::error($e);
+            return error($e->getMessage());
+        }
+
+        return response()->json(['success' => true, 'message' => 'News Deleted Successfully'], 200);
     }
 
     // Subcategories of a category
