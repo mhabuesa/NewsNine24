@@ -35,16 +35,19 @@ class FacebookPostJob implements ShouldQueue
     $baseUrl   = config('app.fb.base_url');
 
     try {
-        $response = Http::post("{$baseUrl}/{$pageId}/feed", [
-            'message'      => $this->message,
-            'access_token' => $pageToken,
-        ]);
+        if ($this->imageUrl === null) {
+            $response = Http::post("{$baseUrl}/{$pageId}/feed", [
+                'message'      => $this->message,
+                'access_token' => $pageToken,
+            ]);
+        }else{
+            $response = Http::post("{$baseUrl}/{$pageId}/photos", [
+                'url'          => $this->imageUrl, // public image URL
+                'caption'      => $this->message, // post message
+                'access_token' => $pageToken,
+            ]);
+        }
 
-        $response = Http::post("{$baseUrl}/{$pageId}/photos", [
-            'url'          => $imageUrl, // public image URL
-            'caption'      => $this->message, // post message
-            'access_token' => $pageToken,
-        ]);
 
 
         if ($response->successful()) {
