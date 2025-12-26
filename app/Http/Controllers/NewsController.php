@@ -71,11 +71,16 @@ class NewsController extends Controller
             'scheduled_at' => $request->scheduled_at,
         ]);
 
-        $imageUrl = env('APP_URL') . '/uploads/' . $image_path;
+        $imageUrl = null;
 
-        if($request->status == 'published'){
-            FacebookPostJob::dispatch($news, $request->title);
+        if ($image_path) {
+            $imageUrl = asset('uploads/' . $image_path);
         }
+
+        if ($request->status === 'published') {
+            FacebookPostJob::dispatch($news, $request->title, $imageUrl);
+        }
+
 
         if($request->meta_title != null){
             NewsMeta::create([
