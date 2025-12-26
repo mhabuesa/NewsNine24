@@ -71,10 +71,16 @@ class NewsController extends Controller
         ]);
 
 
-        if($request->status == 'published'){
-            $message = $request->title . "\n\n" . $request->short_description . "\n\n" . route('news.show', $news->slug);
-            FacebookPostJob::dispatch($news, $message);
+        $imageUrl = null;
+
+        if ($image_path) {
+            $imageUrl = asset($image_path);
         }
+
+        if ($request->status === 'published') {
+            FacebookPostJob::dispatch($news, $request->title, $imageUrl);
+        }
+
 
         if($request->meta_title != null){
             NewsMeta::create([
