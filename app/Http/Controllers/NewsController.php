@@ -71,7 +71,7 @@ class NewsController extends Controller
             'scheduled_at' => $request->scheduled_at,
         ]);
 
-        $imageUrl = env('APP_URL') . '/' . $image_path;
+        $imageUrl = env('APP_URL') . '/uploads/' . $image_path;
 
         if($request->status == 'published'){
             FacebookPostJob::dispatch($news, $request->title, $imageUrl);
