@@ -16,13 +16,11 @@ class FacebookPostJob implements ShouldQueue
 
     protected $news;
     protected $message;
-    protected $imageUrl;
 
-    public function __construct($news, $message, $imageUrl = null)
+    public function __construct($news, $message)
     {
         $this->news = $news;
         $this->message    = $message;
-        $this->imageUrl = $imageUrl;
     }
 
     public function handle()
@@ -35,20 +33,10 @@ class FacebookPostJob implements ShouldQueue
     $baseUrl   = config('app.fb.base_url');
 
     try {
-        if ($this->imageUrl === null) {
-            $response = Http::post("{$baseUrl}/{$pageId}/feed", [
-                'message'      => $this->message,
-                'access_token' => $pageToken,
-            ]);
-        }else{
-            $response = Http::post("{$baseUrl}/{$pageId}/photos", [
-                'url'          => $this->imageUrl, // public image URL
-                'caption'      => $this->message, // post message
-                'access_token' => $pageToken,
-            ]);
-        }
-
-
+        $response = Http::post("{$baseUrl}/{$pageId}/feed", [
+            'message'      => $this->message,
+            'access_token' => $pageToken,
+        ]);
 
         if ($response->successful()) {
             $fbPostId = $response->json('id');
