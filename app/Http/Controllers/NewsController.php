@@ -11,7 +11,6 @@ use Illuminate\Http\Request;
 use App\Jobs\FacebookPostJob;
 use App\Models\NewsMeta;
 use App\Traits\ImageSaveTrait;
-use Illuminate\Support\Facades\App;
 
 class NewsController extends Controller
 {
@@ -71,16 +70,11 @@ class NewsController extends Controller
             'scheduled_at' => $request->scheduled_at,
         ]);
 
-        $imageUrl = null;
 
-        if ($image_path) {
-            $imageUrl = asset('uploads/' . $image_path);
+        if($request->status == 'published'){
+            $message = $request->title . "\n\n" . $request->short_description . "\n\n" . route('news.show', $news->slug);
+            FacebookPostJob::dispatch($news, $message);
         }
-
-        if ($request->status === 'published') {
-            FacebookPostJob::dispatch($news, $request->title, $imageUrl);
-        }
-
 
         if($request->meta_title != null){
             NewsMeta::create([
