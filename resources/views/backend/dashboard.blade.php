@@ -205,6 +205,59 @@
 
 @push('footer_scripts')
     <script>
+        let currentPage = 1;
+        let currentSearch = "";
+
+        function loadOrders(reset = false) {
+            let button = $("#loadMore");
+
+            button.find('.btn-text').addClass('d-none');
+            button.find('.spinner-border').removeClass('d-none');
+
+            $.ajax({
+                url: "{{ route('news.getList.ajax') }}",
+                data: {
+                    page: currentPage,
+                    search: currentSearch,
+                },
+                cache: false, // ✅ cache বন্ধ
+                success: function(res) {
+                    if (reset) {
+                        $("#tableBody").html("");
+                    }
+                    $("#tableBody").append(res.data);
+
+                    if (!res.hasMore) {
+                        button.hide();
+                    } else {
+                        button.show();
+                    }
+                },
+                complete: function() {
+                    button.find('.btn-text').removeClass('d-none');
+                    button.find('.spinner-border').addClass('d-none');
+                }
+            });
+        }
+
+        // প্রথমবার লোড
+        loadOrders(true);
+
+        // Load More
+        $("#loadMore").on("click", function() {
+            currentPage++;
+            loadOrders();
+        });
+
+        // ✅ Search input
+        $("#contributeSearch").on("keyup", function() {
+            currentSearch = $(this).val();
+            currentPage = 1;
+            loadOrders(true);
+        });
+    </script>
+
+    <script>
         $(document).ready(function() {
             $("#contributeSearch").on("keyup", function() {
                 let value = $(this).val().toLowerCase();

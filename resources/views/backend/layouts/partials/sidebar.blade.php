@@ -90,8 +90,12 @@
                         </li>
                     </ul>
                 </li>
-
-                <li class="nav-main-heading">Announcements</li>
+                <li class="nav-main-item">
+                    <a class="nav-main-link {{ request()->routeIs('advertise.index') ? 'active' : '' }}" href="{{ route('advertise.index') }}">
+                        <i class="nav-main-link-icon fas fa-ad"></i>
+                        <span class="nav-main-link-name"> Advertisement</span>
+                    </a>
+                </li>
                 <li class="nav-main-item">
                     <a class="nav-main-link" href="">
                         <i class="nav-main-link-icon fas fa-file-contract"></i>

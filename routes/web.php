@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AdvertiseController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\ProfileController;
@@ -24,8 +25,6 @@ Route::middleware('auth')->group(function () {
         Route::post('/password', 'profile_password')->name('password');
     });
 
-
-
     // Category Routes
     Route::controller(CategoryController::class)->name('category.')->prefix('category')->group(function () {
         Route::get('/', 'index')->name('index');
@@ -34,23 +33,36 @@ Route::middleware('auth')->group(function () {
         Route::post('/status/{id}', 'updateStatus')->name('status.update');
         Route::post('/update', 'updateAjax')->name('update');
     });
-        // Subcategory Routes
-        Route::controller(SubcategoryController::class)->name('subcategory.')->prefix('subcategory')->group(function () {
-            Route::get('/', 'index')->name('index');
-            Route::post('/store', 'store')->name('store');
-            Route::delete('/destroy/{id}', 'destroy')->name('destroy');
-            Route::post('/status/{id}', 'updateStatus')->name('status.update');
-            Route::post('/update', 'updateAjax')->name('update');
-        });
-        // Extra Routes of resource controllers can be defined here
-        // News Routes
-        Route::controller(NewsController::class)->name('news.')->prefix('news')->group(function () {
-            Route::get('/get-subcategories/{category}', 'getSubcategories');
-            Route::get('/trash', 'trash')->name('trash');
-            Route::get('/restore/{id}', 'restore')->name('restore');
-            Route::get('/permanentlydelete/{id}', 'permanentlydelete')->name('permanentlydelete');
 
-        });
+    // Subcategory Routes
+    Route::controller(SubcategoryController::class)->name('subcategory.')->prefix('subcategory')->group(function () {
+        Route::get('/', 'index')->name('index');
+        Route::post('/store', 'store')->name('store');
+        Route::delete('/destroy/{id}', 'destroy')->name('destroy');
+        Route::post('/status/{id}', 'updateStatus')->name('status.update');
+        Route::post('/update', 'updateAjax')->name('update');
+    });
+
+    // Advertise Routes
+    Route::controller(AdvertiseController::class)->name('advertise.')->prefix('advertise')->group(function () {
+        Route::get('/', 'index')->name('index');
+        Route::get('/store', 'store')->name('store');
+
+    });
+
+
+
+    // Extra Routes of resource controllers can be defined here
+    // News Routes
+    Route::controller(NewsController::class)->name('news.')->prefix('news')->group(function () {
+        Route::get('/get-subcategories/{category}', 'getSubcategories');
+        Route::get('/trash', 'trash')->name('trash');
+        Route::get('/restore/{id}', 'restore')->name('restore');
+        Route::get('/permanentlydelete/{id}', 'permanentlydelete')->name('permanentlydelete');
+        Route::get('/getList/ajax', 'getList')->name('getList.ajax');
+
+    });
+
 
     // Resource Routes
     Route::resources([

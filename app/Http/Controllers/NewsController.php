@@ -26,6 +26,36 @@ class NewsController extends Controller
         $newses = News::latest()->get();
         return  view('backend.news.index', compact('newses'));
     }
+    public function getList(Request $request)
+    {
+        $search = $request->input('search');
+        $page   = $request->page ?? 1;
+        $limit  = 10;
+        $offset = ($page - 1) * $limit;
+        $query = News::latest();
+
+        // ✅ Search handle
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('id', 'like', "%{$search}%")
+                ->orWhere('title', 'like', "%{$search}%");
+            });
+
+        }
+
+        $total = $query->count();
+
+        $newses = $query->skip($offset)->take($limit)->get();
+
+        return response()->json([
+            'data'    => view('backend.news.news_rows', [
+                'newses' => $newses,
+                'page'   => $page,
+                'limit'  => $limit,
+            ])->render(),
+            'hasMore' => $total > $offset + $limit,
+        ]);
+    }
 
     /**
      * Show the form for creating a new resource.
@@ -75,7 +105,7 @@ class NewsController extends Controller
 
         $imageUrl = null;
 
-        if ($image_path) {
+        if ($news->image != null) {
             $imageUrl = asset($image_path);
         }
 
