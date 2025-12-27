@@ -1,5 +1,5 @@
 @extends('backend.layouts.app')
-@section('title', 'News List')
+@section('title', 'Trash News List')
 @push('style')
     <link rel="stylesheet" href="{{ asset('assets') }}/js/plugins/datatables-bs5/css/dataTables.bootstrap5.min.css">
     <link rel="stylesheet" href="{{ asset('assets') }}/js/plugins/datatables-buttons-bs5/css/buttons.bootstrap5.min.css">
@@ -15,10 +15,8 @@
                 <div class="block block-rounded">
                     <div class="block-header block-header-default">
                         <h3 class="block-title">
-                            News List
+                            Trash News List
                         </h3>
-                        <a href="{{ route('news.create') }}" class="badge bg-primary p-2"> <i class="fa fa-plus"></i> Add
-                            New News </a>
                     </div>
                     <div class="block-content block-content-full overflow-x-auto">
                         <table class="table table-bordered table-striped table-vcenter" id="categoryTable">
@@ -59,14 +57,12 @@
                                         </td>
                                         <td class="text-center">
                                             <div class="d-flex">
-                                                <a href="{{ route('news.show', $news->id) }}" class="border-0 btn btn-sm">
-                                                    <i class="fa fa-eye text-secondary fa-xl"></i>
-                                                </a>
-                                                <a href="{{ route('news.edit', $news->id) }}" class="border-0 btn btn-sm">
-                                                    <i class="fa fa-pencil text-secondary fa-xl"></i>
-                                                </a>
                                                 <button type="button" class="border-0 btn btn-sm"
-                                                    onclick="deletenews(this)" data-id="{{ $news->id }}"><i
+                                                    onclick="restorenews(this)" data-id="{{ $news->id }}" data-bs-toggle="tooltip" data-bs-placement="top" title="Restore News"><i
+                                                        class="fa fa-undo text-success fa-xl"></i></button>
+
+                                                <button type="button" class="border-0 btn btn-sm"
+                                                    onclick="deletenews(this)" data-id="{{ $news->id }}" data-bs-toggle="tooltip" data-bs-placement="top" title="Permanently Delete"><i
                                                         class="fa fa-trash text-danger fa-xl"></i></button>
                                             </div>
                                         </td>
@@ -108,25 +104,64 @@
 
     <!-- Page specific script -->
     <script>
-        function deletenews(button) {
+        function restorenews(button) {
             const id = $(button).data('id');
             Swal.fire({
                 title: "Are you sure?",
-                text: "This will move the item to trash.",
+                text: "Restore this news?",
                 icon: "warning",
                 showCancelButton: true,
-                confirmButtonColor: "#f97316",
+                confirmButtonColor: "#16a34a",
                 cancelButtonColor: "#d33",
-                confirmButtonText: "Yes, Move To Trash!"
+                confirmButtonText: "Yes, Restore it!"
             }).then((result) => {
                 if (result.isConfirmed) {
-                    let url = "{{ route('news.destroy', ':id') }}";
+                    let url = "{{ route('news.restore', ':id') }}";
                     url = url.replace(':id', id);
                     let token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
                     $.ajax({
                         url: url,
-                        type: 'DELETE',
+                        type: 'get',
+                        dataType: 'json',
+                        headers: {
+                            'X-CSRF-TOKEN': token
+                        },
+                        success: function(data) {
+                            if (data.success) {
+                                showToast(data.message, "success");
+                                $(button).closest('tr').remove();
+                            } else {
+                                showToast(data.message, "error");
+                            }
+                        },
+                        error: function(xhr) {
+                            showToast("An error occurred: " + xhr.responseJSON.message, "error");
+                        }
+                    });
+                }
+            });
+        }
+
+        function deletenews(button) {
+            const id = $(button).data('id');
+            Swal.fire({
+                title: "Are you sure?",
+                text: "You won't be able to revert this!",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#3085d6",
+                cancelButtonColor: "#d33",
+                confirmButtonText: "Yes, delete it!"
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    let url = "{{ route('news.permanentlydelete', ':id') }}";
+                    url = url.replace(':id', id);
+                    let token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+                    $.ajax({
+                        url: url,
+                        type: 'get',
                         dataType: 'json',
                         headers: {
                             'X-CSRF-TOKEN': token

@@ -46,6 +46,9 @@ Route::middleware('auth')->group(function () {
         // News Routes
         Route::controller(NewsController::class)->name('news.')->prefix('news')->group(function () {
             Route::get('/get-subcategories/{category}', 'getSubcategories');
+            Route::get('/trash', 'trash')->name('trash');
+            Route::get('/restore/{id}', 'restore')->name('restore');
+            Route::get('/permanentlydelete/{id}', 'permanentlydelete')->name('permanentlydelete');
 
         });
 

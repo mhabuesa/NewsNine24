@@ -31,12 +31,12 @@
                     <article class="story">
                         <h4>Meta Information</h4>
                         <span class="d-block fw-bold mb-1">Title</span>
-                        <p>{{ $news->meta->title }}</p>
+                        <p>{{ $news->meta?->title }}</p>
 
                         <span class="d-block fw-bold mb-1">Description</span>
-                        {{ $news->meta->description }}
+                        {{ $news->meta?->description }}
                         <span class="d-block fw-bold mb-1 mt-4">Tags</span>
-                        {{ $news->meta->tags }}
+                        {{ $news->meta?->tags }}
 
                     </article>
                 </div>

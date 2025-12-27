@@ -80,6 +80,14 @@
                                 </span>
                             </a>
                         </li>
+                        <li class="nav-main-item">
+                            <a class="nav-main-link {{ request()->routeIs('news.trash') ? 'active' : '' }}"
+                                href="{{ route('news.trash') }}">
+                                <span class="nav-main-link-name">
+                                    <i class="fas fa-trash me-2"></i>Trash
+                                </span>
+                            </a>
+                        </li>
                     </ul>
                 </li>
 

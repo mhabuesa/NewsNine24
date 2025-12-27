@@ -140,30 +140,6 @@ class NewsController extends Controller
             $image_path = $this->saveImage('news', $request->file('image'), 900, 500);
         }
 
-        //Media Post
-        // if($news->status != 'published' && $request->status == 'published'){
-
-        //     $imageUrl = null;
-
-        //     if ($image_path) {
-        //         $imageUrl = asset($image_path);
-        //     }
-
-        //     if ($request->status === 'published') {
-        //         FacebookPostJob::dispatch($news, $request->title, $imageUrl);
-        //     }
-        // }
-        $imageUrl = null;
-
-        if ($image_path) {
-            $imageUrl = asset($image_path);
-        }
-
-        if ($request->status === 'published') {
-            FacebookPostDeleteJob::dispatch($news->fb_post_id);
-            FacebookPostJob::dispatch($news, $request->title, $imageUrl);
-        }
-
         $news->update([
             'title' => $request->title,
             'category_id' => $request->category,
@@ -199,10 +175,10 @@ class NewsController extends Controller
         $news = News::findOrFail($id);
 
         try {
-
-            // Delete FB Post
-            FacebookPostDeleteJob::dispatch($news->fb_post_id);
-
+            //Status Change
+            $news->update([
+                'status' => 'deleted',
+            ]);
             // Delete category
             $news->delete();
         } catch (\Exception $e) {
@@ -221,5 +197,48 @@ class NewsController extends Controller
             ->get();
 
         return response()->json($subcategories);
+    }
+    public function trash()
+    {
+        $newses = News::onlyTrashed()->latest()->get();
+        return view('backend.news.trash', compact('newses'));
+    }
+
+    public function restore($id)
+    {
+       $news = News::withTrashed()->find($id);
+
+        try {
+            $news->update([
+                'status' => 'draft',
+            ]);
+            // Restore News
+            $news->restore();
+        } catch (\Exception $e) {
+            Log::error($e);
+            return error($e->getMessage());
+        }
+
+        return response()->json(['success' => true, 'message' => 'News Restored Successfully'], 200);
+    }
+
+    public function permanentlydelete(string $id)
+    {
+        $news = News::withTrashed()->find($id);
+
+        try {
+            // Delete FB Post
+            FacebookPostDeleteJob::dispatch($news->fb_post_id);
+            // Delete Image
+            $this->deleteImage($news->image);
+
+            // Delete category
+            $news->forceDelete();
+        } catch (\Exception $e) {
+            Log::error($e);
+            return error($e->getMessage());
+        }
+
+        return response()->json(['success' => true, 'message' => 'News Permanently Deleted Successfully'], 200);
     }
 }
