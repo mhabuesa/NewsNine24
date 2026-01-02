@@ -112,12 +112,11 @@ class NewsController extends Controller
             . "Read more {$url}";
 
         $imageUrl = $news->image ? asset($news->image) : null;
-        $twitterImageUrl = public_path('assets/img/signature.png');
 
         if ($request->status === 'published') {
             FacebookPostJob::dispatch($news, $message, $imageUrl);
             // TelegramPostJob::dispatch($message, $imageUrl);
-            PostToTwitterJob::dispatch($message, $twitterImageUrl);
+            PostToTwitterJob::dispatch($message);
         }
 
 
