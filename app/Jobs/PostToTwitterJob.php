@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Jobs;
 
 use Illuminate\Bus\Queueable;
@@ -36,20 +37,23 @@ class PostToTwitterJob implements ShouldQueue
 
     private function uploadMedia($filePath)
     {
+        if (!file_exists($filePath)) {
+            throw new \Exception("File does not exist: $filePath");
+        }
+
         $url = 'https://upload.twitter.com/1.1/media/upload.json';
 
         $oauth = [
-            'oauth_consumer_key'     => env('TWITTER_API_KEY'),
-            'oauth_token'            => env('TWITTER_ACCESS_TOKEN'),
-            'oauth_nonce'            => bin2hex(random_bytes(16)),
-            'oauth_timestamp'        => time(),
+            'oauth_consumer_key' => env('TWITTER_API_KEY'),
+            'oauth_token' => env('TWITTER_ACCESS_TOKEN'),
+            'oauth_nonce' => bin2hex(random_bytes(16)),
+            'oauth_timestamp' => time(),
             'oauth_signature_method' => 'HMAC-SHA1',
-            'oauth_version'          => '1.0'
+            'oauth_version' => '1.0'
         ];
 
         $baseParams = $oauth;
         $baseParams['media_category'] = 'tweet_image';
-
         ksort($baseParams);
 
         $baseString = 'POST&' . rawurlencode($url) . '&' .
@@ -66,9 +70,11 @@ class PostToTwitterJob implements ShouldQueue
         curl_setopt_array($ch, [
             CURLOPT_POST => true,
             CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_HTTPHEADER => ["Authorization: $authHeader"],
+            CURLOPT_HTTPHEADER => [
+                "Authorization: $authHeader"
+            ],
             CURLOPT_POSTFIELDS => [
-                'media' => new CURLFile($filePath)
+                'media' => new \CURLFile($filePath)
             ],
         ]);
 
@@ -77,12 +83,17 @@ class PostToTwitterJob implements ShouldQueue
         curl_close($ch);
 
         if ($error) {
-            throw new \Exception("Media upload failed: ".$error);
+            throw new \Exception("Media upload failed: " . $error);
         }
 
         $data = json_decode($response, true);
-        return $data['media_id_string'] ?? null;
+        if (!isset($data['media_id_string'])) {
+            throw new \Exception("Media ID not returned: " . $response);
+        }
+
+        return $data['media_id_string'];
     }
+
 
     private function postTweet($text, $mediaId = null)
     {
@@ -106,7 +117,7 @@ class PostToTwitterJob implements ShouldQueue
             rawurlencode(http_build_query($baseParams, '', '&', PHP_QUERY_RFC3986));
 
         $signingKey = rawurlencode(env('TWITTER_API_SECRET_KEY')) . '&' .
-                      rawurlencode(env('TWITTER_ACCESS_TOKEN_SECRET'));
+            rawurlencode(env('TWITTER_ACCESS_TOKEN_SECRET'));
 
         $oauth['oauth_signature'] = base64_encode(
             hash_hmac('sha1', $baseString, $signingKey, true)
@@ -138,7 +149,7 @@ class PostToTwitterJob implements ShouldQueue
         curl_close($ch);
 
         if ($error) {
-            throw new \Exception("Tweet failed: ".$error);
+            throw new \Exception("Tweet failed: " . $error);
         }
 
         return json_decode($response, true);
