@@ -61,22 +61,20 @@
                         <i class="nav-main-link-icon fas fa-newspaper"></i>
                         <span class="nav-main-link-name">News</span>
                     </a>
-
                     <ul class="nav-main-submenu">
-                        <li class="nav-main-item">
-                            <a class="nav-main-link {{ request()->routeIs('news.index') ? 'active' : (request()->routeIs('news.show') ? 'active' : '') }}"
-                                href="{{ route('news.index') }}">
-                                <span class="nav-main-link-name">
-                                    <i class="fas fa-file-invoice me-2"></i> News List
-                                </span>
-                            </a>
-                        </li>
-
                         <li class="nav-main-item">
                             <a class="nav-main-link {{ request()->routeIs('news.create') ? 'active' : '' }}"
                                 href="{{ route('news.create') }}">
                                 <span class="nav-main-link-name">
                                     <i class="fas fa-circle-plus me-2"></i> Add New News
+                                </span>
+                            </a>
+                        </li>
+                        <li class="nav-main-item">
+                            <a class="nav-main-link {{ request()->routeIs('news.index') ? 'active' : (request()->routeIs('news.show') ? 'active' : '') }}"
+                                href="{{ route('news.index') }}">
+                                <span class="nav-main-link-name">
+                                    <i class="fas fa-file-invoice me-2"></i> News List
                                 </span>
                             </a>
                         </li>
@@ -91,7 +89,8 @@
                     </ul>
                 </li>
                 <li class="nav-main-item">
-                    <a class="nav-main-link {{ request()->routeIs('advertise.index') ? 'active' : '' }}" href="{{ route('advertise.index') }}">
+                    <a class="nav-main-link {{ request()->routeIs('advertise.index') ? 'active' : '' }}"
+                        href="{{ route('advertise.index') }}">
                         <i class="nav-main-link-icon fas fa-ad"></i>
                         <span class="nav-main-link-name"> Advertisement</span>
                     </a>

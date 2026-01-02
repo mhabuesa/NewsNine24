@@ -132,4 +132,18 @@ return [
         'base_url' => env('FB_BASE_URL'),
     ],
 
+    /* Telegram Bot API */
+    'telegram' => [
+        'bot_token' => env('TELEGRAM_BOT_TOKEN'),
+        'chat_id'   => env('TELEGRAM_CHANNEL_ID'),
+    ],
+
+    /* Twitter API */
+    'twitter' => [
+        'api_key'        => env('TWITTER_API_KEY'),
+        'api_secret'     => env('TWITTER_API_SECRET'),
+        'access_token'        => env('TWITTER_ACCESS_TOKEN'),
+        'access_token_secret' => env('TWITTER_ACCESS_TOKEN_SECRET'),
+    ],
+
 ];

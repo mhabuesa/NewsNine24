@@ -1,30 +1,7 @@
-{{-- @forelse ($contributes as $key => $contribute)
-    <tr>
-        <td>{{ ($page - 1) * $limit + ($key + 1) }}</td>
-        <td>{{ $contribute->member->name }}</td>
-        <td>
-            <span class="fs-xs fw-semibold d-inline-block py-1 px-3 semi_rounded_pill bg-info-light text-info">
-                {{ $contribute->cycle->name }}
-            </span>
-        </td>
-        <td>
-            <span class="fs-xs fw-semibold d-inline-block py-1 px-3 semi_rounded_pill bg-success-light text-success">
-                {{ $contribute->amount }}
-            </span>
-        </td>
-        <td class="text-center w-25">
-            {{ $contribute->created_at->format('d-M-y') }}
-        </td>
-    </tr>
-@empty
-    <tr>
-        <td colspan="5" class="text-center">No Contribution Found!</td>
-    </tr>
-@endforelse --}}
 
 @forelse ($newses as $key => $news)
     <tr>
-        <td class="text-center fs-sm">{{ $key + 1 }}</td>
+        <td class="text-center fs-sm">{{ $offset + $key + 1 }}</td>
         <td class="fw-semibold fs-sm">{{ $news->title }}</td>
         <td class="fw-semibold fs-sm">{{ $news->slug }}</td>
         <td class="fw-semibold fs-sm">{{ $news->category->name }}</td>

@@ -10,9 +10,12 @@ use App\Models\Subcategory;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use App\Jobs\FacebookPostJob;
+use App\Jobs\TelegramPostJob;
+use App\Jobs\PostToTwitterJob;
 use App\Traits\ImageSaveTrait;
 use App\Jobs\FacebookPostDeleteJob;
 use Illuminate\Support\Facades\Log;
+use App\Services\TwitterService;
 
 class NewsController extends Controller
 {
@@ -38,9 +41,8 @@ class NewsController extends Controller
         if ($search) {
             $query->where(function ($q) use ($search) {
                 $q->where('id', 'like', "%{$search}%")
-                ->orWhere('title', 'like', "%{$search}%");
+                    ->orWhere('title', 'like', "%{$search}%");
             });
-
         }
 
         $total = $query->count();
@@ -52,6 +54,7 @@ class NewsController extends Controller
                 'newses' => $newses,
                 'page'   => $page,
                 'limit'  => $limit,
+                'offset' => $offset,
             ])->render(),
             'hasMore' => $total > $offset + $limit,
         ]);
@@ -85,7 +88,7 @@ class NewsController extends Controller
             $slug = $slug . '-' . random_int(000, 999);
         }
 
-        if($request->hasFile('image')) {
+        if ($request->hasFile('image')) {
             $image_path = $this->saveImage('news', $request->file('image'), 900, 500);
         }
 
@@ -102,19 +105,22 @@ class NewsController extends Controller
             'scheduled_at' => $request->scheduled_at,
         ]);
 
+        $url = url('/news/' . $news->slug);
 
-        $imageUrl = null;
+        $message = "{$news->title}\n\n"
+            . "{$news->short_description}\n\n"
+            . "Read more {$url}";
 
-        if ($news->image != null) {
-            $imageUrl = asset($image_path);
-        }
+        $imageUrl = $news->image ? asset($news->image) : null;
 
         if ($request->status === 'published') {
-            FacebookPostJob::dispatch($news, $request->title, $imageUrl);
+            FacebookPostJob::dispatch($news, $message, $imageUrl);
+            // TelegramPostJob::dispatch($message, $imageUrl);
+            PostToTwitterJob::dispatch($message, $imageUrl);
         }
 
 
-        if($request->meta_title != null){
+        if ($request->meta_title != null) {
             NewsMeta::create([
                 'news_id' => $news->id,
                 'title' => $request->meta_title,
@@ -159,17 +165,24 @@ class NewsController extends Controller
             'description' => 'required',
         ]);
 
-        $news = News::find($id);
+        $news = News::findOrFail($id);
+
+        $oldStatus = $news->status;
+
+        // slug
         $slug = substr(Str::slug($request->title), 0, 40);
-        if (News::where('slug', $slug)->exists()) {
-            $slug = $slug . '-' . random_int(000, 999);
+        if (News::where('slug', $slug)->where('id', '!=', $news->id)->exists()) {
+            $slug .= '-' . random_int(100, 999);
         }
+
+        // image
         $image_path = $news->image;
-        if($request->hasFile('image')) {
+        if ($request->hasFile('image')) {
             $this->deleteImage($news->image);
             $image_path = $this->saveImage('news', $request->file('image'), 900, 500);
         }
 
+        // UPDATE FIRST
         $news->update([
             'title' => $request->title,
             'category_id' => $request->category,
@@ -183,9 +196,24 @@ class NewsController extends Controller
             'scheduled_at' => $request->scheduled_at,
         ]);
 
+        // PUBLISH CHECK
+        if ($oldStatus !== 'published' && $request->status === 'published') {
 
+            $url = url('/news/' . $news->slug);
 
-        if($request->meta_title != null){
+            // Message
+            $message = $news->title . "\n\n"
+                . $news->short_description . "\n\n"
+                . "Read more: " . $url;
+
+            $imageUrl = $news->image ? asset($news->image) : null;
+
+            FacebookPostJob::dispatch($news, $message, $imageUrl);
+            TelegramPostJob::dispatch($message, $imageUrl);
+        }
+
+        // meta update
+        if ($request->meta_title) {
             $news->meta()->update([
                 'title' => $request->meta_title,
                 'description' => $request->meta_description,
@@ -195,6 +223,7 @@ class NewsController extends Controller
 
         return redirect()->route('news.index')->with('success', 'News updated successfully.');
     }
+
 
     /**
      * Remove the specified resource from storage.
@@ -236,7 +265,7 @@ class NewsController extends Controller
 
     public function restore($id)
     {
-       $news = News::withTrashed()->find($id);
+        $news = News::withTrashed()->find($id);
 
         try {
             $news->update([

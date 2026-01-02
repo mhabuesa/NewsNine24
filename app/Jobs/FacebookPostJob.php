@@ -48,8 +48,6 @@ class FacebookPostJob implements ShouldQueue
             ]);
         }
 
-
-
         if ($response->successful()) {
             $fbPostId = $response->json('id');
 
