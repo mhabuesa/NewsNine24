@@ -24,6 +24,8 @@ return new class extends Migration
             $table->string('status')->default('published');
             $table->dateTime('scheduled_at')->nullable();
             $table->string('fb_post_id')->nullable();
+            $table->string('is_featured')->nullable();
+            $table->string('is_hot')->nullable();
             $table->timestamps();
         });
     }

@@ -26,8 +26,7 @@ class NewsController extends Controller
      */
     public function index()
     {
-        $newses = News::latest()->get();
-        return  view('backend.news.index', compact('newses'));
+        return  view('backend.news.index');
     }
     public function getList(Request $request)
     {
@@ -82,16 +81,43 @@ class NewsController extends Controller
             'description' => 'required',
         ]);
 
-        $slug = substr(Str::slug($request->title), 0, 40);
+        /* ---------------- Slug ---------------- */
+        $baseSlug = $request->filled('slug') ? $request->slug : $request->title;
+        $slug = Str::limit(Str::slug($baseSlug), 40, '');
+        $originalSlug = $slug;
+        $count = 1;
 
-        if (News::where('slug', $slug)->exists()) {
-            $slug = $slug . '-' . random_int(000, 999);
+        while (News::where('slug', $slug)->exists()) {
+            $slug = $originalSlug . '-' . $count++;
         }
 
+        /* ---------------- Image ---------------- */
+        $imagePath = null;
         if ($request->hasFile('image')) {
-            $image_path = $this->saveImage('news', $request->file('image'), 900, 500);
+            $imagePath = $this->saveImage('news', $request->file('image'), 900, 500);
         }
 
+        $scheduledAt = null;
+        $createdAt = now();
+        $status = 'published';
+
+        /* ---------------- Schedule Logic ---------------- */
+        if ($request->filled('scheduled_at')) {
+            $scheduleTime = \Carbon\Carbon::parse($request->scheduled_at);
+
+            if ($scheduleTime->isFuture()) {
+                // future → schedule
+                $scheduledAt = $scheduleTime;
+                $status = 'scheduled';
+            } else {
+                // past → publish but backdate
+                $createdAt = $scheduleTime;
+                $status = 'published';
+            }
+        }
+
+
+        /* ---------------- Create News ---------------- */
         $news = News::create([
             'title' => $request->title,
             'category_id' => $request->category,
@@ -99,30 +125,30 @@ class NewsController extends Controller
             'slug' => $slug,
             'short_description' => $request->short_description,
             'description' => $request->description,
-            'image' => $image_path ?? null,
+            'image' => $imagePath,
             'video_url' => $request->video_url,
-            'status' => $request->status,
-            'scheduled_at' => $request->scheduled_at,
+            'status' => $status,
+            'scheduled_at' => $scheduledAt,
+            'is_featured' => $request->featuredNews ? 'featured' : '',
+            'is_hot' => $request->hotNews ? 'hot' : '',
+            'created_at' => $createdAt,
         ]);
 
-        $url = url('/news/' . $news->slug);
+        $url = route('news.show', $news->slug);
 
-        $message = "{$news->title}\n\n"
-            . "{$news->short_description}\n\n"
-            . "Read more {$url}";
-
+        $message = "{$news->title}\n\n{$news->short_description}\n\nRead more {$url}";
         $imageUrl = $news->image ? asset($news->image) : null;
 
-        if ($request->status === 'published') {
+        /* ---------------- Publish Check ---------------- */
+        if ($status === 'published') {
             FacebookPostJob::dispatch($news, $message, $imageUrl);
             // TelegramPostJob::dispatch($message, $imageUrl);
             PostToTwitterJob::dispatch($message);
         }
 
-
-        if ($request->meta_title != null) {
-            NewsMeta::create([
-                'news_id' => $news->id,
+        /* ---------------- Meta Update ---------------- */
+        if ($request->filled('meta_title')) {
+            $news->meta()->create([
                 'title' => $request->meta_title,
                 'description' => $request->meta_description,
                 'tags' => $request->tags,
@@ -131,6 +157,7 @@ class NewsController extends Controller
 
         return redirect()->route('news.index')->with('success', 'News created successfully.');
     }
+
 
     /**
      * Display the specified resource.
@@ -163,26 +190,53 @@ class NewsController extends Controller
             'category' => 'required',
             'short_description' => 'required',
             'description' => 'required',
+            'scheduled_at' => 'nullable|date',
         ]);
 
         $news = News::findOrFail($id);
-
         $oldStatus = $news->status;
 
-        // slug
-        $slug = substr(Str::slug($request->title), 0, 40);
-        if (News::where('slug', $slug)->where('id', '!=', $news->id)->exists()) {
-            $slug .= '-' . random_int(100, 999);
+        /* ---------------- Slug ---------------- */
+        $baseSlug = $request->filled('slug') ? $request->slug : $request->title;
+        $slug = Str::limit(Str::slug($baseSlug), 40, '');
+        $originalSlug = $slug;
+        $count = 1;
+
+        while (
+            News::where('slug', $slug)
+            ->where('id', '!=', $news->id)
+            ->exists()
+        ) {
+            $slug = $originalSlug . '-' . $count++;
         }
 
-        // image
-        $image_path = $news->image;
+        /* ---------------- Image ---------------- */
+        $imagePath = $news->image;
         if ($request->hasFile('image')) {
             $this->deleteImage($news->image);
-            $image_path = $this->saveImage('news', $request->file('image'), 900, 500);
+            $imagePath = $this->saveImage('news', $request->file('image'), 900, 500);
         }
 
-        // UPDATE FIRST
+        /* ---------------- Schedule Logic ---------------- */
+        $scheduledAt = null;
+        $createdAt = $news->created_at;
+        $status = 'published';
+
+        if ($request->filled('scheduled_at')) {
+            $scheduleTime = \Carbon\Carbon::parse($request->scheduled_at);
+
+            if ($scheduleTime->isFuture()) {
+                // future → scheduled
+                $scheduledAt = $scheduleTime;
+                $status = 'scheduled';
+            } else {
+                // past → publish + backdate
+                $createdAt = $scheduleTime;
+                $status = 'published';
+            }
+        }
+
+        /* ---------------- Update News ---------------- */
         $news->update([
             'title' => $request->title,
             'category_id' => $request->category,
@@ -190,39 +244,44 @@ class NewsController extends Controller
             'slug' => $slug,
             'short_description' => $request->short_description,
             'description' => $request->description,
-            'image' => $image_path,
+            'image' => $imagePath,
             'video_url' => $request->video_url,
-            'status' => $request->status,
-            'scheduled_at' => $request->scheduled_at,
+            'status' => $status,
+            'scheduled_at' => $scheduledAt,
+            'is_featured' => $request->featuredNews ? 'featured' : '',
+            'is_hot' => $request->hotNews ? 'hot' : '',
+            'created_at' => $createdAt,
         ]);
 
-        // PUBLISH CHECK
-        if ($oldStatus !== 'published' && $request->status === 'published') {
+        /* ---------------- Publish Check ---------------- */
+        if ($oldStatus !== 'published' && $status === 'published') {
 
-            $url = url('/news/' . $news->slug);
+            $url = route('news.show', $news->slug);
 
-            // Message
-            $message = $news->title . "\n\n"
-                . $news->short_description . "\n\n"
-                . "Read more: " . $url;
-
+            $message = "{$news->title}\n\n{$news->short_description}\n\nRead more: {$url}";
             $imageUrl = $news->image ? asset($news->image) : null;
 
             FacebookPostJob::dispatch($news, $message, $imageUrl);
             TelegramPostJob::dispatch($message, $imageUrl);
         }
 
-        // meta update
-        if ($request->meta_title) {
-            $news->meta()->update([
-                'title' => $request->meta_title,
-                'description' => $request->meta_description,
-                'tags' => $request->tags,
-            ]);
+        /* ---------------- Meta Update ---------------- */
+        if ($request->filled('meta_title')) {
+            $news->meta()->updateOrCreate(
+                ['news_id' => $news->id],
+                [
+                    'title' => $request->meta_title,
+                    'description' => $request->meta_description,
+                    'tags' => $request->tags,
+                ]
+            );
         }
 
-        return redirect()->route('news.index')->with('success', 'News updated successfully.');
+        return redirect()
+            ->route('news.index')
+            ->with('success', 'News updated successfully.');
     }
+
 
 
     /**
@@ -299,5 +358,45 @@ class NewsController extends Controller
         }
 
         return response()->json(['success' => true, 'message' => 'News Permanently Deleted Successfully'], 200);
+    }
+
+    public function featured()
+    {
+        $featuredNewses = News::where('is_featured', 'featured')->latest()->get();
+        $hotNewses = News::where('is_hot', 'hot')->latest()->get();
+        return view('backend.news.featured', compact('featuredNewses', 'hotNewses'));
+    }
+
+    public function featuredUpdate($id)
+    {
+
+        $news = News::find($id);
+
+        try {
+            $news->update([
+                'is_featured' => null,
+            ]);
+        } catch (\Exception $e) {
+            Log::error($e);
+            return error($e->getMessage());
+        }
+
+        return response()->json(['success' => true, 'message' => 'News Remove From Featured'], 200);
+    }
+    public function hotUpdate($id)
+    {
+
+        $news = News::find($id);
+
+        try {
+            $news->update([
+                'is_hot' => null,
+            ]);
+        } catch (\Exception $e) {
+            Log::error($e);
+            return error($e->getMessage());
+        }
+
+        return response()->json(['success' => true, 'message' => 'News Remove From Hot'], 200);
     }
 }

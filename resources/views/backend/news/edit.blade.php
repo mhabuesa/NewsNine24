@@ -47,9 +47,7 @@
                                     <div class="preview-box border rounded position-relative d-flex align-items-center justify-content-center"
                                         style="height: 307px; background: #f0f2f5; overflow: hidden;">
                                         @if ($news->image != null)
-                                            <img id="imagePreview"
-                                                src="{{asset($news->image) }}"
-                                                class="img-fluid"
+                                            <img id="imagePreview" src="{{ asset($news->image) }}" class="img-fluid"
                                                 style="max-height: 100%; max-width: 100%; object-fit: contain; display: block;">
                                         @else
                                             <img id="imagePreview"
@@ -95,7 +93,8 @@
                                         <select class="js-select2 form-select" id="category_id" name="category" required>
                                             <option value="">Select Category</option>
                                             @foreach ($categories as $category)
-                                                <option {{ $news->category_id == $category->id ? 'selected' : '' }} value="{{ $category->id }}">{{ $category->name }}</option>
+                                                <option {{ $news->category_id == $category->id ? 'selected' : '' }}
+                                                    value="{{ $category->id }}">{{ $category->name }}</option>
                                             @endforeach
                                         </select>
                                         @error('category')
@@ -109,7 +108,8 @@
                                         <select class="js-select2 form-select" id="sub_category_id" name="subcategory">
                                             <option value="">Select Subcategory</option>
                                             @foreach ($subcategories as $subcategory)
-                                                <option {{ $news->subcategory_id == $subcategory->id ? 'selected' : '' }} value="{{ $subcategory->id }}">{{ $subcategory->name }}</option>
+                                                <option {{ $news->subcategory_id == $subcategory->id ? 'selected' : '' }}
+                                                    value="{{ $subcategory->id }}">{{ $subcategory->name }}</option>
                                             @endforeach
                                         </select>
                                     </div>
@@ -171,57 +171,87 @@
                     </div>
                 </div>
 
-                <div class="mb-4">
-                    <div class="col-lg-8 col-xl-5 m-auto">
-                        <div class="row items-push">
-                            <div class="col-md-4">
-                                <div class="form-check form-block">
-                                    <input class="form-check-input" type="radio" value="published" id="published"
-                                        name="status" {{ $news->status == 'published' ? 'checked' : '' }}>
-                                    <label class="form-check-label" for="published">
-                                        <span class="d-flex align-items-center">
-                                            <i class="fa-solid fa-globe text-success"></i>
-                                            <span class="ms-2">
-                                                <span class="fw-bold">Published</span>
-                                            </span>
+                <div class="col-lg-8 col-xl-5 m-auto">
+                    <div class="row items-push justify-content-center">
+                        <div class="col-md-5">
+                            <div class="form-check form-block m-2">
+                                <input class="form-check-input" type="checkbox" id="featuredNews" name="featuredNews"
+                                {{ $news->is_featured == 'featured' ? 'checked' : '' }}>
+                                <label class="form-check-label" for="featuredNews">
+                                    <span class="d-flex align-items-center justify-content-center">
+                                        <i class="fa-solid fa-star text-warning"></i>
+                                        <span class="ms-2">
+                                            <span class="fw-bold">Featured News</span>
                                         </span>
-                                    </label>
-                                </div>
+                                    </span>
+                                </label>
                             </div>
-                            <div class="col-md-4">
-                                <div class="form-check form-block">
-                                    <input class="form-check-input" type="radio" id="draft" name="status"
-                                        value="draft" {{ $news->status == 'draft' ? 'checked' : '' }}>
-                                    <label class="form-check-label" for="draft">
-                                        <span class="d-flex align-items-center">
-                                            <i class="fa-solid fa-file-lines text-warning"></i>
-                                            <span class="ms-2">
-                                                <span class="fw-bold">Draft</span>
-                                            </span>
+                        </div>
+                        <div class="col-md-5">
+                            <div class="form-check form-block m-2">
+                                <input class="form-check-input" type="checkbox" id="hotNews" name="hotNews"
+                                {{ $news->is_hot == 'hot' ? 'checked' : '' }}>
+                                <label class="form-check-label" for="hotNews">
+                                    <span class="d-flex align-items-center justify-content-center">
+                                        <i class="fa-solid fa-fire text-danger"></i>
+                                        <span class="ms-2">
+                                            <span class="fw-bold">Hot News</span>
                                         </span>
-                                    </label>
-                                </div>
+                                    </span>
+                                </label>
                             </div>
-                            <div class="col-md-4">
-                                <div class="form-check form-block">
-                                    <input class="form-check-input" type="radio" value="scheduled" id="scheduled"
-                                        name="status" {{ $news->status == 'scheduled' ? 'checked' : '' }}>
-                                    <label class="form-check-label" for="scheduled">
-                                        <span class="d-flex align-items-center">
-                                            <i class="fa-solid fa-calendar-days text-danger"></i>
-                                            <span class="ms-2">
-                                                <span class="fw-bold">Scheduled</span>
-                                            </span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-8 col-xl-5 m-auto">
+                    <div class="row items-push">
+                        <div class="col-md-4">
+                            <div class="form-check form-block">
+                                <input class="form-check-input" type="radio" value="published" id="published"
+                                    name="status" {{ $news->status == 'published' ? 'checked' : '' }}>
+                                <label class="form-check-label" for="published">
+                                    <span class="d-flex align-items-center">
+                                        <i class="fa-solid fa-globe text-success"></i>
+                                        <span class="ms-2">
+                                            <span class="fw-bold">Published</span>
                                         </span>
-                                    </label>
-                                </div>
+                                    </span>
+                                </label>
                             </div>
-                            <div class="col-md-6 m-auto d-none" id="scheduleBox">
-                                <div class="form-block">
-                                    <label class="form-label d-block text-center" for="scheduled_at">Date Time</label>
-                                    <input type="datetime-local" class="form-control" id="scheduled_at"
-                                        name="scheduled_at" min="{{ now()->format('Y-m-d\TH:i') }}" value="{{ old('scheduled_at') ?? $news->scheduled_at }}">
-                                </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-check form-block">
+                                <input class="form-check-input" type="radio" id="draft" name="status"
+                                    value="draft" {{ $news->status == 'draft' ? 'checked' : '' }}>
+                                <label class="form-check-label" for="draft">
+                                    <span class="d-flex align-items-center">
+                                        <i class="fa-solid fa-file-lines text-warning"></i>
+                                        <span class="ms-2">
+                                            <span class="fw-bold">Draft</span>
+                                        </span>
+                                    </span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-check form-block">
+                                <input class="form-check-input" type="radio" value="scheduled" id="scheduled"
+                                    name="status" {{ $news->status == 'scheduled' ? 'checked' : '' }}>
+                                <label class="form-check-label" for="scheduled">
+                                    <span class="d-flex align-items-center">
+                                        <i class="fa-solid fa-calendar-days text-danger"></i>
+                                        <span class="ms-2">
+                                            <span class="fw-bold">Scheduled</span>
+                                        </span>
+                                    </span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-md-6 m-auto d-none" id="scheduleBox">
+                            <div class="form-block">
+                                <label class="form-label d-block text-center" for="scheduled_at">Date Time</label>
+                                <input type="datetime-local" class="form-control" id="scheduled_at" name="scheduled_at"
+                                    value="{{ old('scheduled_at') ?? optional($news->scheduled_at)->format('Y-m-d\TH:i') }}">
                             </div>
                         </div>
                     </div>

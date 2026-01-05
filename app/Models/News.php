@@ -10,8 +10,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 class News extends Model
 {
     use HasFactory, Notifiable, SoftDeletes;
-    
+
     protected $guarded = ['id'];
+    protected $casts = [
+        'scheduled_at' => 'datetime',
+    ];
 
     public function category()
     {
@@ -25,6 +28,6 @@ class News extends Model
 
     public function meta()
     {
-        return $this->hasOne(NewsMeta::class , 'news_id');
+        return $this->hasOne(NewsMeta::class, 'news_id');
     }
 }

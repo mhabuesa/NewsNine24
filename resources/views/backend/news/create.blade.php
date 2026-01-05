@@ -82,7 +82,7 @@
                             </div>
                             <div class="mb-4">
                                 <div class="row">
-                                    <div class="col-6">
+                                    <div class="col-4">
                                         <label class="form-label">Category <span class="text-danger">*</span></label>
                                         <select class="js-select2 form-select" id="category_id" name="category" required>
                                             <option value="">Select Category</option>
@@ -95,12 +95,17 @@
                                         @enderror
                                     </div>
 
-                                    <div class="col-6">
+                                    <div class="col-4">
                                         <label class="form-label">Sub Category <span
                                                 class="text-muted fs-xs">(Optional)</span></label>
                                         <select class="js-select2 form-select" id="sub_category_id" name="subcategory">
                                             <option value="">No subcategory available</option>
                                         </select>
+                                    </div>
+                                    <div class="col-4">
+                                        <label class="form-label" for="slugInput">Slug</label>
+                                        <input type="text" class="form-control" id="slugInput" name="slug"
+                                            placeholder="Slug" value="{{ old('slug') }}">
                                     </div>
 
                                 </div>
@@ -141,8 +146,8 @@
                     <div class="row push">
                         <div class="col-lg-10 col-xl-10 m-auto">
                             <div class="mb-4">
-                                <label class="form-label" for="meta_title">Meta Title</label>
-                                <input type="text" class="form-control" id="meta_title" name="meta_title"
+                                <label class="form-label" for="metaTitle">Meta Title</label>
+                                <input type="text" class="form-control" id="metaTitle" name="meta_title"
                                     placeholder="Meta Title" value="{{ old('meta_title') }}">
                             </div>
                             <div class="mb-4">
@@ -155,72 +160,100 @@
                                 <input type="text" id="input-tags" name="tags" placeholder="Enter Tags"
                                     value="{{ old('tags') }}">
                             </div>
-
                         </div>
                     </div>
                 </div>
 
-                <div class="mb-4">
-                    <div class="col-lg-8 col-xl-5 m-auto">
-                        <div class="row items-push">
-                            <div class="col-md-4">
-                                <div class="form-check form-block">
-                                    <input class="form-check-input" type="radio" value="published" id="published"
-                                        name="status" checked="">
-                                    <label class="form-check-label" for="published">
-                                        <span class="d-flex align-items-center">
-                                            <i class="fa-solid fa-globe text-success"></i>
-                                            <span class="ms-2">
-                                                <span class="fw-bold">Published</span>
-                                            </span>
+                <div class="col-lg-8 col-xl-5 m-auto">
+                    <div class="row items-push justify-content-center">
+                        <div class="col-md-5">
+                            <div class="form-check form-block m-2">
+                                <input class="form-check-input" type="checkbox" id="featuredNews"
+                                    name="featuredNews">
+                                <label class="form-check-label" for="featuredNews">
+                                    <span class="d-flex align-items-center justify-content-center">
+                                       <i class="fa-solid fa-star text-warning"></i>
+                                        <span class="ms-2">
+                                            <span class="fw-bold">Featured News</span>
                                         </span>
-                                    </label>
-                                </div>
+                                    </span>
+                                </label>
                             </div>
-                            <div class="col-md-4">
-                                <div class="form-check form-block">
-                                    <input class="form-check-input" type="radio" id="draft" name="status"
-                                        value="draft">
-                                    <label class="form-check-label" for="draft">
-                                        <span class="d-flex align-items-center">
-                                            <i class="fa-solid fa-file-lines text-warning"></i>
-                                            <span class="ms-2">
-                                                <span class="fw-bold">Draft</span>
-                                            </span>
+                        </div>
+                        <div class="col-md-5">
+                            <div class="form-check form-block m-2">
+                                <input class="form-check-input" type="checkbox" id="hotNews" name="hotNews">
+                                <label class="form-check-label" for="hotNews">
+                                    <span class="d-flex align-items-center justify-content-center">
+                                        <i class="fa-solid fa-fire text-danger"></i>
+                                        <span class="ms-2">
+                                            <span class="fw-bold">Hot News</span>
                                         </span>
-                                    </label>
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="form-check form-block">
-                                    <input class="form-check-input" type="radio" value="scheduled" id="scheduled"
-                                        name="status">
-                                    <label class="form-check-label" for="scheduled">
-                                        <span class="d-flex align-items-center">
-                                            <i class="fa-solid fa-calendar-days text-danger"></i>
-                                            <span class="ms-2">
-                                                <span class="fw-bold">Scheduled</span>
-                                            </span>
-                                        </span>
-                                    </label>
-                                </div>
-                            </div>
-                            <div class="col-md-6 m-auto d-none" id="scheduleBox">
-                                <div class="form-block">
-                                    <label class="form-label d-block text-center" for="scheduled_at">Date Time</label>
-                                    <input type="datetime-local" class="form-control" id="scheduled_at"
-                                        name="scheduled_at" min="{{ now()->format('Y-m-d\TH:i') }}">
-                                </div>
+                                    </span>
+                                </label>
                             </div>
                         </div>
                     </div>
                 </div>
-
-                <div class="mt-4 text-center">
-                    <button type="submit" class="btn btn-primary  w-50 mt-4 mb-4">Submit</button>
+                <div class="col-lg-8 col-xl-5 m-auto">
+                    <div class="row items-push">
+                        <div class="col-md-4">
+                            <div class="form-check form-block m-2">
+                                <input class="form-check-input" type="radio" value="published" id="published"
+                                    name="status" checked="">
+                                <label class="form-check-label" for="published">
+                                    <span class="d-flex align-items-center justify-content-center">
+                                        <i class="fa-solid fa-globe text-success"></i>
+                                        <span class="ms-2">
+                                            <span class="fw-bold">Published</span>
+                                        </span>
+                                    </span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-check form-block m-2">
+                                <input class="form-check-input" type="radio" id="draft" name="status"
+                                    value="draft">
+                                <label class="form-check-label" for="draft">
+                                    <span class="d-flex align-items-center justify-content-center">
+                                        <i class="fa-solid fa-file-lines text-warning"></i>
+                                        <span class="ms-2">
+                                            <span class="fw-bold">Draft</span>
+                                        </span>
+                                    </span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-check form-block m-2">
+                                <input class="form-check-input" type="radio" value="scheduled" id="scheduled"
+                                    name="status">
+                                <label class="form-check-label" for="scheduled">
+                                    <span class="d-flex align-items-center justify-content-center">
+                                        <i class="fa-solid fa-calendar-days text-danger"></i>
+                                        <span class="ms-2">
+                                            <span class="fw-bold">Scheduled</span>
+                                        </span>
+                                    </span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-md-6 m-auto d-none" id="scheduleBox">
+                            <div class="form-block m-2">
+                                <label class="form-label d-block text-center" for="scheduled_at">Date Time</label>
+                                <input type="datetime-local" class="form-control" id="scheduled_at" name="scheduled_at">
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </form>
+
+            <div class="mt-4 text-center">
+                <button type="submit" class="btn btn-primary  w-50 mt-4 mb-4">Submit</button>
+            </div>
+    </div>
+    </form>
     </div>
 @endsection
 @push('footer_scripts')
@@ -247,13 +280,11 @@
         });
 
         $(document).ready(function() {
-            // ইমেজ প্রিভিউ লজিক
             $('#imageInput').change(function(e) {
                 var file = this.files[0];
                 if (file) {
                     var reader = new FileReader();
                     reader.onload = function(e) {
-                        // প্রিভিউ ইমেজ আপডেট হবে
                         $('#imagePreview').attr('src', e.target.result).fadeIn();
                     }
                     reader.readAsDataURL(file);
@@ -262,18 +293,16 @@
 
         });
         $(document).ready(function() {
-            // টাইটেল ইনপুটে কিছু লিখলেই এই ফাংশনটি কাজ করবে
             $('#newsTitle').on('input', function() {
                 let title = $(this).val();
 
-                // স্লাগ জেনারেট করার লজিক
                 let slug = title.toLowerCase()
-                    .trim() // শুরুর এবং শেষের বাড়তি স্পেস বাদ দেওয়া
+                    .trim()
                     .replace(/[^\w\s-]/g,
-                        '') // স্পেশাল ক্যারেক্টার বাদ দেওয়া (বাংলা সাপোর্ট সহ চাইলে এটি পরিবর্তন করতে হবে)
+                        '')
                     .replace(/[\s_-]+/g,
-                        '-') // স্পেস বা আন্ডারস্কোর থাকলে ড্যাশ (-) দিয়ে পরিবর্তন
-                    .replace(/^-+|-+$/g, ''); // শুরুতে বা শেষে বাড়তি ড্যাশ থাকলে বাদ দেওয়া
+                        '-')
+                    .replace(/^-+|-+$/g, '');
 
                 $('#slugInput').val(slug);
             });
@@ -350,6 +379,14 @@
             statusRadios.forEach(radio => {
                 radio.addEventListener('change', toggleSchedule);
             });
+        });
+    </script>
+    <script>
+        $('#newsTitle').on('keyup', function() {
+            $('#metaTitle').val($(this).val());
+        });
+        $('#short_description').on('keyup', function() {
+            $('#meta_description').val($(this).val());
         });
     </script>
 @endpush

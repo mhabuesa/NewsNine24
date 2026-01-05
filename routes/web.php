@@ -1,16 +1,18 @@
 <?php
 
-use App\Http\Controllers\AdvertiseController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\HomeController;
-use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\NewsController;
 use App\Http\Controllers\PostController;
+use App\Http\Controllers\UserController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\AdvertiseController;
+use App\Http\Controllers\FrontendController;
 use App\Http\Controllers\SubcategoryController;
 
-Route::get('/', function () {
-    return view('welcome');
+Route::controller(FrontendController::class)->group(function () {
+    Route::get('/', 'index')->name('index');
 });
 
 
@@ -47,7 +49,6 @@ Route::middleware('auth')->group(function () {
     Route::controller(AdvertiseController::class)->name('advertise.')->prefix('advertise')->group(function () {
         Route::get('/', 'index')->name('index');
         Route::get('/store', 'store')->name('store');
-
     });
 
 
@@ -60,13 +61,16 @@ Route::middleware('auth')->group(function () {
         Route::get('/restore/{id}', 'restore')->name('restore');
         Route::get('/permanentlydelete/{id}', 'permanentlydelete')->name('permanentlydelete');
         Route::get('/getList/ajax', 'getList')->name('getList.ajax');
-
+        Route::get('/featured', 'featured')->name('featured');
+        Route::get('/featuredUpdate/{id}', 'featuredUpdate')->name('featuredUpdate');
+        Route::get('/hotUpdate/{id}', 'hotUpdate')->name('hotUpdate');
     });
 
 
     // Resource Routes
     Route::resources([
         'news' => NewsController::class,
+        'users' => UserController::class,
     ]);
 });
 

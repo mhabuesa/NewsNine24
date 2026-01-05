@@ -5,6 +5,19 @@
                 data-action="sidebar_toggle">
                 <i class="fa fa-fw fa-bars"></i>
             </button>
+            <button type="button" class="btn btn-sm btn-alt-secondary d-md-none" data-toggle="layout"
+                data-action="header_search_on">
+                <i class="fa fa-fw fa-search"></i>
+            </button>
+            <form class="d-none d-md-inline-block" action="be_pages_generic_search.html" method="POST">
+                <div class="input-group input-group-sm">
+                    <input type="text" class="form-control form-control-alt" placeholder="Search.."
+                        id="page-header-search-input2" name="page-header-search-input2">
+                    <span class="input-group-text border-0">
+                        <i class="fa fa-fw fa-search"></i>
+                    </span>
+                </div>
+            </form>
         </div>
         <div class="d-flex align-items-center">
             <div class="dropdown d-inline-block ms-2">
@@ -70,14 +83,27 @@
                                 </div>
                                 <div class="flex-grow-1 pe-2">
                                     <div class="fw-semibold fs-xs text-capitalize">Notification</div>
-                                    <span
-                                        class="fw-medium text-muted">1 min Ago</span>
+                                    <span class="fw-medium text-muted">1 min Ago</span>
                                 </div>
                             </a>
                         </li>
                     </ul>
                 </div>
             </div>
+        </div>
+    </div>
+    <div id="page-header-search" class="overlay-header bg-body-extra-light">
+        <div class="content-header">
+            <form class="w-100" action="be_pages_generic_search.html" method="POST">
+                <div class="input-group">
+                    <button type="button" class="btn btn-alt-danger" data-toggle="layout"
+                        data-action="header_search_off">
+                        <i class="fa fa-fw fa-times-circle"></i>
+                    </button>
+                    <input type="text" class="form-control" placeholder="Search or hit ESC.."
+                        id="page-header-search-input" name="page-header-search-input">
+                </div>
+            </form>
         </div>
     </div>
     <div id="page-header-loader" class="overlay-header bg-body-extra-light">

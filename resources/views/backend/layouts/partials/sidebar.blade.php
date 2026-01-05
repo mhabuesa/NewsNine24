@@ -89,6 +89,42 @@
                     </ul>
                 </li>
                 <li class="nav-main-item">
+                    <a class="nav-main-link {{ request()->routeIs('news.featured') ? 'active' : '' }}"
+                        href="{{ route('news.featured') }}">
+                        <i class="nav-main-link-icon fa-solid fa-star "></i>
+                        <span class="nav-main-link-name">Featured News</span>
+                    </a>
+                </li>
+                 <li class="nav-main-heading">
+                    </i> User Management
+                </li>
+                <li class="nav-main-item {{ request()->routeIs('users.*') ? 'open' : '' }}">
+                    <a class="nav-main-link nav-main-link-submenu {{ request()->routeIs('users.*') ? 'active' : '' }}"
+                        data-toggle="submenu" aria-haspopup="true" aria-expanded="false" href="#">
+
+                        <i class="nav-main-link-icon fas fa-users"></i>
+                        <span class="nav-main-link-name">Users</span>
+                    </a>
+                    <ul class="nav-main-submenu">
+                        <li class="nav-main-item">
+                            <a class="nav-main-link {{ request()->routeIs('users.create') ? 'active' : '' }}"
+                                href="{{ route('users.create') }}">
+                                <span class="nav-main-link-name">
+                                    <i class="fas fa-circle-plus me-2"></i> Add New User
+                                </span>
+                            </a>
+                        </li>
+                        <li class="nav-main-item">
+                            <a class="nav-main-link {{ request()->routeIs('users.index') ? 'active' : (request()->routeIs('users.show') ? 'active' : '') }}"
+                                href="{{ route('users.index') }}">
+                                <span class="nav-main-link-name">
+                                    <i class="fas fa-file-invoice me-2"></i> User List
+                                </span>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+                <li class="nav-main-item">
                     <a class="nav-main-link {{ request()->routeIs('advertise.index') ? 'active' : '' }}"
                         href="{{ route('advertise.index') }}">
                         <i class="nav-main-link-icon fas fa-ad"></i>

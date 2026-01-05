@@ -6,6 +6,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Log;
 
 class PostToTwitterJob implements ShouldQueue
 {
@@ -75,6 +76,7 @@ class PostToTwitterJob implements ShouldQueue
             throw new \Exception($error);
         }
 
+        Log::info("Twitter Response: " . $response);
         return json_decode($response, true);
     }
 }

@@ -15,52 +15,68 @@
                 <div class="block block-rounded">
                     <div class="block-header block-header-default">
                         <h3 class="block-title">
-                            News List
+                            Users List
                         </h3>
                         <div class="block-options space-x-1">
-                            <button type="button" class="btn btn-sm btn-alt-secondary" data-toggle="class-toggle"
-                                data-target="#one-dashboard-search-orders" data-class="d-none">
-                                <i class="fa fa-search"></i>
-                            </button>
-                            <a href="{{ route('news.create') }}" class="badge bg-primary p-2"> <i class="fa fa-plus"></i>
+
+                            <a href="{{ route('users.create') }}" class="badge bg-primary p-2"> <i class="fa fa-plus"></i>
                                 Add
-                                New News </a>
-                        </div>
-                    </div>
-                    <div id="one-dashboard-search-orders" class="block-content border-bottom d-none">
-                        <div class="push">
-                            <div class="input-group">
-                                <input type="text" class="form-control form-control-alt" id="newsSearch" name="search"
-                                    placeholder="Search all News..">
-                            </div>
+                                New User </a>
                         </div>
                     </div>
                     <div class="block-content block-content-full overflow-x-auto">
                         <table class="table table-bordered table-striped table-vcenter" id="newsTable">
                             <thead>
-                                <tr>
-                                    <th class="text-center">SL</th>
-                                    <th>Title</th>
-                                    <th>Slug</th>
-                                    <th>Category</th>
-                                    <th>Sub Categories</th>
-                                    <th>Status</th>
-                                    <th>Action</th>
+                                <tr class="text-center">
+                                    <th class="">SL</th>
+                                    <th class="">Image</th>
+                                    <th class="">Name</th>
+                                    <th class="">Email</th>
+                                    <th class="">Date</th>
+                                    <th class="">Action</th>
                                 </tr>
                             </thead>
-                            <tbody id="tableBody">
-                                {{-- AJAX CONTENT LOAD HERE --}}
+                            <tbody>
+
+                                @forelse ($users as $key => $user)
+                                    <tr>
+                                        <td class="text-center fs-sm">{{ $key + 1 }}</td>
+                                        <td class="fw-semibold fs-sm">
+                                            @if ($user->image)
+                                                <img src="{{ asset($user->image) }}" alt="User Image"
+                                                    class="img-fluid rounded" style="width: 50px; height: 50px;">
+                                            @else
+                                                <img src="https://placehold.co/50x50/d8f2e7/000?text=No+Image"
+                                                    alt="No Image" class="img-fluid rounded">
+                                            @endif
+                                        </td>
+                                        <td class="fw-semibold fs-sm">{{ $user->name }}</td>
+                                        <td class="fw-semibold fs-sm">{{ $user->email }}</td>
+                                        <td class="fw-semibold fs-sm">{{ $user->created_at->format('d-m-Y') }}</td>
+                                        <td class="text-center">
+                                            <div class="d-block">
+                                                @if ($user->id == auth()->user()->id)
+                                                <span class="badge bg-warning p-2"> Not Allowed </span>
+                                                @else
+                                                    <a href="{{ route('users.edit', $user->id) }}"
+                                                        class="border-0 btn btn-sm">
+                                                        <i class="fa fa-pencil text-secondary fa-xl"></i>
+                                                    </a>
+                                                    <button type="button" class="border-0 btn btn-sm"
+                                                        onclick="deleteUser(this)" data-id="{{ $user->id }}"><i
+                                                            class="fa fa-trash text-danger fa-xl"></i></button>
+                                                @endif
+                                            </div>
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="5" class="text-center">No Contribution Found!</td>
+                                    </tr>
+                                @endforelse
+
                             </tbody>
                         </table>
-                    </div>
-                    <div class="block-content block-content-full bg-body-light p-2">
-                        <div class="text-center">
-                            <button id="loadMore" class="btn btn-primary">
-                                <span class="btn-text">Load More</span>
-                                <span class="spinner-border spinner-border-sm d-none" role="status"
-                                    aria-hidden="true"></span>
-                            </button>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -88,86 +104,22 @@
     <script src="{{ asset('assets') }}/js/plugins/datatables-buttons/buttons.html5.min.js"></script>
     <script src="{{ asset('assets') }}/js/pages/be_tables_datatables.min.js"></script>
 
-    <script>
-        let currentPage = 1;
-        let currentSearch = "";
-
-        function loadOrders(reset = false) {
-            let button = $("#loadMore");
-
-            button.find('.btn-text').addClass('d-none');
-            button.find('.spinner-border').removeClass('d-none');
-
-            $.ajax({
-                url: "{{ route('news.getList.ajax') }}",
-                data: {
-                    page: currentPage,
-                    search: currentSearch,
-                },
-                cache: false, // ✅ cache বন্ধ
-                success: function(res) {
-                    if (reset) {
-                        $("#tableBody").html("");
-                    }
-                    $("#tableBody").append(res.data);
-
-                    if (!res.hasMore) {
-                        button.hide();
-                    } else {
-                        button.show();
-                    }
-                },
-                complete: function() {
-                    button.find('.btn-text').removeClass('d-none');
-                    button.find('.spinner-border').addClass('d-none');
-                }
-            });
-        }
-
-        // প্রথমবার লোড
-        loadOrders(true);
-
-        // Load More
-        $("#loadMore").on("click", function() {
-            currentPage++;
-            loadOrders();
-        });
-
-        // ✅ Search input
-        $("#newsSearch").on("keyup", function() {
-            currentSearch = $(this).val();
-            currentPage = 1;
-            loadOrders(true);
-        });
-    </script>
-
-    <script>
-        $(document).ready(function() {
-            $("#newsSearch").on("keyup", function() {
-                let value = $(this).val().toLowerCase();
-
-                $("#newsTable tbody tr").filter(function() {
-                    $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1);
-                });
-            });
-        });
-    </script>
 
     <!-- Page specific script -->
     <script>
-        function deletenews(button) {
+        function deleteUser(button) {
             const id = $(button).data('id');
             Swal.fire({
                 title: "Are you sure?",
-                text: "This will move the item to trash.",
+                text: "This User will be Terminated Permanently.",
                 icon: "warning",
                 showCancelButton: true,
                 confirmButtonColor: "#f97316",
                 cancelButtonColor: "#d33",
-                confirmButtonText: "Yes, Move To Trash!"
+                confirmButtonText: "Yes, Terminate!"
             }).then((result) => {
                 if (result.isConfirmed) {
-                    let url = "{{ route('news.destroy', ':id') }}";
+                    let url = "{{ route('users.destroy', ':id') }}";
                     url = url.replace(':id', id);
                     let token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
